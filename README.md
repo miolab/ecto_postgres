@@ -416,7 +416,7 @@ $ psql friends_repo
 psql (12.2)
 Type "help" for help.
 
-# select * from people;
+friends_repo=# select * from people;
  id | first_name | last_name | age 
 ----+------------+-----------+-----
   1 |            |           |  28
@@ -427,6 +427,114 @@ Type "help" for help.
 - Ectoでの __CREATE__ 処理に成功しました。
 
 - `id: 2` レコードで、`first_name` `last_name` のバリデーションも効いています。
+
+---
+
+## クエリ実行
+
+- 事前準備として、DBを再作成します。
+
+  - PostgreSQL
+
+    ```postgres
+    # exit
+    ```
+
+  - __bash__
+
+    ```bash
+    $ mix ecto.drop
+    The database for Friends.Repo has been dropped
+
+    $ mix ecto.create
+    The database for Friends.Repo has been created
+
+    $ mix ecto.migrate
+
+    08:14:06.052 [info]  == Running 20200517041113 Friends.Repo.Migrations.CreatePeople.change/0 forward
+
+    08:14:06.055 [info]  create table people
+
+    08:14:06.078 [info]  == Migrated 20200517041113 in 0.0s
+    ```
+
+  - PostgreSQL
+
+    ```postgres
+    $ psql friends_repo
+
+    friends_repo=# select * from people;
+    id | first_name | last_name | age 
+    ----+------------+-----------+-----
+    (0 rows)
+    ```
+
+    DBが再作成されました。
+
+
+- `$ iex -S mix` で以下を実行。
+
+  クエリを構築 → クエリをリポジトリに渡す → DBに対してクエリを実行
+
+  ```elixir
+  iex(1)> people = [
+  ...(1)> %Friends.Person{first_name: "im", last_name: "miolab", age: 28},
+  ...(1)> %Friends.Person{first_name: "im2", last_name: "miolab2", age: 27},
+  ...(1)> %Friends.Person{first_name: "im3", last_name: "miolab3", age: 26},
+  ...(1)> ]
+  [
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:built, "people">,
+      age: 28,
+      first_name: "im",
+      id: nil,
+      last_name: "miolab"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:built, "people">,
+      age: 27,
+      first_name: "im2",
+      id: nil,
+      last_name: "miolab2"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:built, "people">,
+      age: 26,
+      first_name: "im3",
+      id: nil,
+      last_name: "miolab3"
+    }
+  ]
+
+  iex(2)> Enum.each(people, fn(person) -> Friends.Repo.insert(person) end)
+
+  08:43:20.340 [debug] QUERY OK db=3.1ms decode=1.5ms queue=1.4ms idle=1286.5ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [28, "im", "miolab"]
+
+  08:43:20.344 [debug] QUERY OK db=1.1ms queue=1.1ms idle=1297.4ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [27, "im2", "miolab2"]
+
+  08:43:20.347 [debug] QUERY OK db=1.2ms queue=1.4ms idle=1299.7ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [26, "im3", "miolab3"]
+  :ok
+  ```
+
+  （※ `changeset` 不経由）
+
+#### 結果確認（テーブル）
+
+  ```postgres
+  friends_repo=# select * from people;
+  id | first_name | last_name | age 
+  ----+------------+-----------+-----
+    1 | im         | miolab    |  28
+    2 | im2        | miolab2   |  27
+    3 | im3        | miolab3   |  26
+  (3 rows)
+  ```
+
+---
+
 
 ---
 
