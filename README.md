@@ -184,27 +184,76 @@ $ psql -l
 
 ---
 
-## DBセットアップ（マイグレーション〜）
+## DBセットアップ（マイグレーション 〜 テーブル作成）
 
-```bash
-$ mix ecto.gen.migration create_people
+- __bash__
 
-* creating priv/repo/migrations
-* creating priv/repo/migrations/20200517041113_create_people.exs
+  ```bash
+  $ mix ecto.gen.migration create_people
+
+  * creating priv/repo/migrations
+  * creating priv/repo/migrations/20200517041113_create_people.exs
+  ```
+
+- priv/repo/migrations/20200517041113_create_people.exs
+
+  ```elixir
+    def change do
+      create table(:people) do    --> add
+        add :first_name, :string  --> add
+        add :last_name, :string   --> add
+        add :age, :integer        --> add
+      end
+  ```
+
+- __bash__
+
+  ```bash
+  $ mix ecto.migrate
+
+  13:28:21.372 [info]  == Running 20200517041113 Friends.Repo.Migrations.CreatePeople.change/0 forward
+
+  13:28:21.373 [info]  create table people
+
+  13:28:21.382 [info]  == Migrated 20200517041113 in 0.0s
+  ```
+
+- Ectoでの __DBテーブルの作成__ に成功しました。
+
+#### 結果確認（テーブル）
+
+```postgres
+$ psql friends_repo
+psql (12.2)
+Type "help" for help.
+
+friends_repo=# \dt
+               List of relations
+ Schema |       Name        | Type  |  Owner   
+--------+-------------------+-------+----------
+ public | people            | table | postgres
+ public | schema_migrations | table | postgres
+(2 rows)
+
+friends_repo=# \d people
+                                      Table "public.people"
+   Column   |          Type          | Collation | Nullable |              Default               
+------------+------------------------+-----------+----------+------------------------------------
+ id         | bigint                 |           | not null | nextval('people_id_seq'::regclass)
+ first_name | character varying(255) |           |          | 
+ last_name  | character varying(255) |           |          | 
+ age        | integer                |           |          | 
+Indexes:
+    "people_pkey" PRIMARY KEY, btree (id)
+
 ```
-
-
-
-
----
-
 
 - （メモ）
 
   - マイグレーションでミスがあった場合、`mix ecto.rollback` で変更を元に戻すことが可能。  
-  （その後、変更修正してから、再度 `mix ecto.create`を実行）
+  （その後、変更修正してから、再度 `mix ecto.create`を実行する）
 
-  - 最初の `mix ecto.create` 直後の段階で `mix ecto.rollback` すると、作成したばかりのテーブルを削除可能。
+  - この段階で `mix ecto.rollback` すると、いま作成したばかりのテーブルを削除可能。
 
 ---
 
