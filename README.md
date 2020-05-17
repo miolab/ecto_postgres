@@ -33,7 +33,7 @@
 
 ---
 
-## セットアップ
+## EctoでDB作成
 
 Hexdocsを元に実行します。
 
@@ -161,6 +161,7 @@ Hexdocsを元に実行します。
 
   ```bash
   $ mix ecto.create
+
   Compiling 3 files (.ex)
   Generated friends app
   The database for Friends.Repo has been created
@@ -178,6 +179,32 @@ $ psql -l
  .
  .
 ```
+
+- Ectoでの __DBの作成__ に成功しました。
+
+---
+
+## DBセットアップ（マイグレーション〜）
+
+```bash
+$ mix ecto.gen.migration create_people
+
+* creating priv/repo/migrations
+* creating priv/repo/migrations/20200517041113_create_people.exs
+```
+
+
+
+
+---
+
+
+- （メモ）
+
+  - マイグレーションでミスがあった場合、`mix ecto.rollback` で変更を元に戻すことが可能。  
+  （その後、変更修正してから、再度 `mix ecto.create`を実行）
+
+  - 最初の `mix ecto.create` 直後の段階で `mix ecto.rollback` すると、作成したばかりのテーブルを削除可能。
 
 ---
 
