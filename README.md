@@ -259,9 +259,174 @@ Indexes:
 
 ## スキーマ作成
 
+- ファイル作成： `lib/friends/person.ex`
 
+  ```elixir
+  defmodule Friends.Person do
+    use Ecto.Schema
 
+    schema "people" do
+      field :first_name, :string
+      field :last_name, :string
+      field :age, :integer
+    end
+  end
+  ```
 
+- `$ iex -S mix` で検証
+
+  ```elixir
+  iex(1)> person = %Friends.Person{}
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:built, "people">,
+    age: nil,
+    first_name: nil,
+    id: nil,
+    last_name: nil
+  }
+
+  iex(2)> person = %Friends.Person{age: 28}
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:built, "people">,
+    age: 28,
+    first_name: nil,
+    id: nil,
+    last_name: nil
+  }
+
+  iex(3)> person.age
+  28
+
+  iex(4)> Friends.Repo.insert(person)
+
+  15:42:21.463 [debug] QUERY OK db=2.9ms decode=1.2ms queue=1.1ms idle=27.4ms
+  INSERT INTO "people" ("age") VALUES ($1) RETURNING "id" [28]
+  {:ok,
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 28,
+    first_name: nil,
+    id: 1,
+    last_name: nil
+  }}
+  ```
+
+### バリデーション機能実装
+
+- `lib/friends/person.ex` の `defmodule` 内に、以下を追加
+
+  ```elixir
+  def changeset(person, params \\ %{}) do
+    person
+    |> Ecto.Changeset.cast(params, [:first_name, :last_name, :age])
+    |> Ecto.Changeset.validate_required([:first_name, :last_name])
+  end
+  ```
+
+- `$ iex -S mix` で検証 _（バリデーションエラー パターン）_
+
+  ```elixir
+  iex(1)> person = %Friends.Person{}
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:built, "people">,
+    age: nil,
+    first_name: nil,
+    id: nil,
+    last_name: nil
+  }
+
+  iex(2)> changeset = Friends.Person.changeset(person, %{})
+  #Ecto.Changeset<
+    action: nil,
+    changes: %{},
+    errors: [
+      first_name: {"can't be blank", [validation: :required]},
+      last_name: {"can't be blank", [validation: :required]}
+    ],
+    data: #Friends.Person<>,
+    valid?: false
+  >
+
+  iex(3)> Friends.Repo.insert(changeset)
+  {:error,
+  #Ecto.Changeset<
+    action: :insert,
+    changes: %{},
+    errors: [
+      first_name: {"can't be blank", [validation: :required]},
+      last_name: {"can't be blank", [validation: :required]}
+    ],
+    data: #Friends.Person<>,
+    valid?: false
+  >}
+
+  iex(4)> changeset.valid?
+  false
+  ```
+
+  - ちゃんと `:error` が返り、バリデーションが効いていることを確認できました。
+
+- `$ iex -S mix` で検証 _（サクセス パターン）_
+
+  データの `INSERT` (CREATE処理) まで合わせて実行します。
+
+  ```
+  iex(5)> person = %Friends.Person{}
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:built, "people">,
+    age: nil,
+    first_name: nil,
+    id: nil,
+    last_name: nil
+  }
+
+  iex(6)> changeset = Friends.Person.changeset(person, %{first_name: "im", last_name: "miolab"})
+  #Ecto.Changeset<
+    action: nil,
+    changes: %{first_name: "im", last_name: "miolab"},
+    errors: [],
+    data: #Friends.Person<>,
+    valid?: true
+  >
+
+  iex(7)> changeset.errors
+  []
+
+  iex(8)> changeset.valid?
+  true
+
+  iex(9)> Friends.Repo.insert(changeset)
+
+  16:15:47.461 [debug] QUERY OK db=1.7ms decode=1.1ms queue=1.4ms idle=421.1ms
+  INSERT INTO "people" ("first_name","last_name") VALUES ($1,$2) RETURNING "id" ["im", "miolab"]
+  {:ok,
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: nil,
+    first_name: "im",
+    id: 2,
+    last_name: "miolab"
+  }}
+  ```
+
+#### 結果確認（テーブル）
+
+```postgres
+$ psql friends_repo
+psql (12.2)
+Type "help" for help.
+
+# select * from people;
+ id | first_name | last_name | age 
+----+------------+-----------+-----
+  1 |            |           |  28
+  2 | im         | miolab    |    
+(2 rows)
+```
+
+- Ectoでの __CREATE__ 処理に成功しました。
+
+- `id: 2` レコードで、`first_name` `last_name` のバリデーションも効いています。
 
 ---
 
