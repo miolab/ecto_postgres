@@ -1,21 +1,16 @@
-# Friends
+# Ecto & PostgreSQL
 
-**TODO: Add description**
+`Ecto` と `PostgreSQL` でいろいろお試しします。
 
-## Installation
+- __Ecto__
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `friends` to your list of dependencies in `mix.exs`:
+  `Elixir`の
+  - Databaseラッパー
 
-```elixir
-def deps do
-  [
-    {:friends, "~> 0.1.0"}
-  ]
-end
-```
+  - クエリジェネレーター
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/friends](https://hexdocs.pm/friends).
+- 参考
 
+  - [Hex](https://hex.pm/packages/ecto_sql)
+
+  - [Hexdocs](https://hexdocs.pm/ecto/getting-started.html)
