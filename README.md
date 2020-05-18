@@ -535,7 +535,119 @@ friends_repo=# select * from people;
 
 ---
 
+## レコード取得（Read）
 
+`$ iex -S mix` で確認。
+
+- 最初のレコード 取得
+
+  ```elixir
+  iex(1)> Friends.Person |> Ecto.Query.first |> Friends.Repo.one
+
+  09:10:01.124 [debug] QUERY OK source="people" db=0.7ms decode=0.9ms queue=1.4ms idle=1100.2ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 ORDER BY p0."id" LIMIT 1 []
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 28,
+    first_name: "im",
+    id: 1,
+    last_name: "miolab"
+  }
+  ```
+
+- 最後のレコード 取得
+
+  ```elixir
+  iex(2)> Friends.Person |> Ecto.Query.last |> Friends.Repo.one 
+
+  09:10:08.097 [debug] QUERY OK source="people" db=0.7ms queue=0.7ms idle=1081.6ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 ORDER BY p0."id" DESC LIMIT 1 []
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 26,
+    first_name: "im3",
+    id: 3,
+    last_name: "miolab3"
+  }
+  ```
+
+- __全レコード__ 取得
+
+  ```elixir
+  iex(3)> Friends.Person |> Friends.Repo.all
+
+  09:10:58.107 [debug] QUERY OK source="people" db=1.1ms queue=1.6ms idle=91.3ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 []
+  [
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 28,
+      first_name: "im",
+      id: 1,
+      last_name: "miolab"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 27,
+      first_name: "im2",
+      id: 2,
+      last_name: "miolab2"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 26,
+      first_name: "im3",
+      id: 3,
+      last_name: "miolab3"
+    }
+  ]
+  ```
+
+- __`id` を指定__ してレコード取得
+
+  ```elixir
+  iex(4)> Friends.Person |> Friends.Repo.get(1)
+
+  09:11:39.422 [debug] QUERY OK source="people" db=1.4ms queue=1.6ms idle=1405.7ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."id" = $1) [1]
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 28,
+    first_name: "im",
+    id: 1,
+    last_name: "miolab"
+  }
+
+  iex(5)> Friends.Person |> Friends.Repo.get(2)
+
+  09:11:41.785 [debug] QUERY OK source="people" db=1.9ms idle=1769.5ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."id" = $1) [2]
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 27,
+    first_name: "im2",
+    id: 2,
+    last_name: "miolab2"
+  }
+  ```
+
+- __カラム属性__ に基づいてレコードを取得
+
+  ```elixir
+  iex(6)> Friends.Person |> Friends.Repo.get_by(first_name: "im3")
+
+  09:12:13.275 [debug] QUERY OK source="people" db=1.0ms queue=2.6ms idle=1257.9ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."first_name" = $1) ["im3"]
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 26,
+    first_name: "im3",
+    id: 3,
+    last_name: "miolab3"
+  }
+  ```
+
+---
 ---
 
 (on going)
