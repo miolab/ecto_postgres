@@ -637,6 +637,7 @@ friends_repo=# select * from people;
     id: 1,
     last_name: "miolab"
   }
+
   iex(5)> Friends.Person |> Friends.Repo.get(2)
 
   11:21:14.877 [debug] QUERY OK source="people" db=3.9ms idle=1749.7ms
@@ -665,6 +666,110 @@ friends_repo=# select * from people;
     last_name: "miolab"
   }
   ```
+
+- フィルタリング抽出（`Ecto.Query` 併用）
+
+  ```elixir
+  iex(7)> require Ecto.Query
+  Ecto.Query
+
+  iex(8)> Friends.Person |> Ecto.Query.where(last_name: "miolab") |> Friends.Repo.all
+
+  11:34:11.847 [debug] QUERY OK source="people" db=0.5ms queue=1.5ms idle=1721.2ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."last_name" = 'miolab') []
+  [
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 28,
+      first_name: "im",
+      id: 1,
+      last_name: "miolab"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 27,
+      first_name: "foo",
+      id: 2,
+      last_name: "miolab"
+    }
+  ]
+  ```
+
+  - 別記法
+
+    ```elixir
+    iex(9)> Ecto.Query.from(p in Friends.Person, where: p.last_name == "miolab") |> Friends.Repo.all
+
+    12:02:34.174 [debug] QUERY OK source="people" db=0.9ms queue=0.1ms idle=1563.1ms
+    SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."last_name" = 'miolab') []
+    [
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 28,
+        first_name: "im",
+        id: 1,
+        last_name: "miolab"
+      },
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 27,
+        first_name: "foo",
+        id: 2,
+        last_name: "miolab"
+      }
+    ]
+    ```
+
+  - _Note_ : 変数をクエリ内で展開する場合は、`^` （ピン演算子）が必要。
+
+    ```elixir
+    iex(10)> last_name_miolab = "miolab"
+    "miolab"
+
+    iex(11)> Friends.Person |> Ecto.Query.where(last_name: ^last_name_miolab) |> Friends.Repo.all
+
+    11:52:23.130 [debug] QUERY OK source="people" db=1.3ms queue=2.7ms idle=1518.1ms
+    SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."last_name" = $1) ["miolab"]
+    [
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 28,
+        first_name: "im",
+        id: 1,
+        last_name: "miolab"
+      },
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 27,
+        first_name: "foo",
+        id: 2,
+        last_name: "miolab"
+      }
+    ]
+
+    iex(12)> Ecto.Query.from(p in Friends.Person, where: p.last_name == ^last_name_miolab) |> Friends.Repo.all
+
+    12:03:02.104 [debug] QUERY OK source="people" db=2.0ms idle=1493.0ms
+    SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."last_name" = $1) ["miolab"]
+    [
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 28,
+        first_name: "im",
+        id: 1,
+        last_name: "miolab"
+      },
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 27,
+        first_name: "foo",
+        id: 2,
+        last_name: "miolab"
+      }
+    ]
+    ```
+
+
 
 ---
 ---
