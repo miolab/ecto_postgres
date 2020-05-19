@@ -257,7 +257,11 @@ Indexes:
 
 ---
 
-## スキーマ作成
+## レコード作成（Create）
+
+- `insert()`
+
+### スキーマ作成
 
 - ファイル作成： `lib/friends/person.ex`
 
@@ -550,6 +554,11 @@ friends_repo=# select * from people;
 
 ## レコード取得（Read）
 
+- `get()`
+- `get_by()`
+- `where()`
+
+
 `$ iex -S mix` で確認。
 
 - 最初のレコード 取得
@@ -800,7 +809,11 @@ friends_repo=# select * from people;
 
 ## レコード更新（Update）
 
-- `$ iex -S mix`
+- `update()`
+
+`$ iex -S mix` で確認。
+
+- iex
 
   ```elixir
   iex(1)> require Ecto.Query
@@ -852,6 +865,21 @@ friends_repo=# select * from people;
     4 | eli        | xir       |  26
     1 | im         | miolab    |  18
   (4 rows)
+  ```
+
+---
+
+## レコード削除（Delete）
+
+- `delete()`
+
+`$ iex -S mix` で確認。
+
+- iex
+
+  ```elixir
+
+
   ```
 
 ---
