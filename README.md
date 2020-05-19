@@ -479,8 +479,9 @@ friends_repo=# select * from people;
   ```elixir
   iex(1)> people = [
   ...(1)> %Friends.Person{first_name: "im", last_name: "miolab", age: 28},
-  ...(1)> %Friends.Person{first_name: "im2", last_name: "miolab2", age: 27},
-  ...(1)> %Friends.Person{first_name: "im3", last_name: "miolab3", age: 26},
+  ...(1)> %Friends.Person{first_name: "foo", last_name: "miolab", age: 27},
+  ...(1)> %Friends.Person{first_name: "foobar", last_name: "hogehoge", age: 26},
+  ...(1)> %Friends.Person{first_name: "eli", last_name: "xir", age: 26},
   ...(1)> ]
   [
     %Friends.Person{
@@ -493,29 +494,39 @@ friends_repo=# select * from people;
     %Friends.Person{
       __meta__: #Ecto.Schema.Metadata<:built, "people">,
       age: 27,
-      first_name: "im2",
+      first_name: "foo",
       id: nil,
-      last_name: "miolab2"
+      last_name: "miolab"
     },
     %Friends.Person{
       __meta__: #Ecto.Schema.Metadata<:built, "people">,
       age: 26,
-      first_name: "im3",
+      first_name: "foobar",
       id: nil,
-      last_name: "miolab3"
+      last_name: "hogehoge"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:built, "people">,
+      age: 26,
+      first_name: "eli",
+      id: nil,
+      last_name: "xir"
     }
   ]
 
   iex(2)> Enum.each(people, fn(person) -> Friends.Repo.insert(person) end)
 
-  08:43:20.340 [debug] QUERY OK db=3.1ms decode=1.5ms queue=1.4ms idle=1286.5ms
+  10:17:19.023 [debug] QUERY OK db=2.3ms decode=1.0ms queue=2.6ms idle=1198.7ms
   INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [28, "im", "miolab"]
 
-  08:43:20.344 [debug] QUERY OK db=1.1ms queue=1.1ms idle=1297.4ms
-  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [27, "im2", "miolab2"]
+  10:17:19.027 [debug] QUERY OK db=1.1ms queue=1.1ms idle=1208.3ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [27, "foo", "miolab"]
 
-  08:43:20.347 [debug] QUERY OK db=1.2ms queue=1.4ms idle=1299.7ms
-  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [26, "im3", "miolab3"]
+  10:17:19.030 [debug] QUERY OK db=1.0ms queue=0.9ms idle=1210.7ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [26, "foobar", "hogehoge"]
+
+  10:17:19.032 [debug] QUERY OK db=1.0ms queue=0.9ms idle=1212.8ms
+  INSERT INTO "people" ("age","first_name","last_name") VALUES ($1,$2,$3) RETURNING "id" [26, "eli", "xir"] 
   :ok
   ```
 
@@ -525,12 +536,14 @@ friends_repo=# select * from people;
 
   ```postgres
   friends_repo=# select * from people;
-  id | first_name | last_name | age 
+
+   id | first_name | last_name | age
   ----+------------+-----------+-----
     1 | im         | miolab    |  28
-    2 | im2        | miolab2   |  27
-    3 | im3        | miolab3   |  26
-  (3 rows)
+    2 | foo        | miolab    |  27
+    3 | foobar     | hogehoge  |  26
+    4 | eli        | xir       |  26
+  (4 rows)
   ```
 
 ---
@@ -544,7 +557,7 @@ friends_repo=# select * from people;
   ```elixir
   iex(1)> Friends.Person |> Ecto.Query.first |> Friends.Repo.one
 
-  09:10:01.124 [debug] QUERY OK source="people" db=0.7ms decode=0.9ms queue=1.4ms idle=1100.2ms
+  11:17:20.928 [debug] QUERY OK source="people" db=0.8ms decode=1.6ms queue=1.5ms idle=1791.5ms
   SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 ORDER BY p0."id" LIMIT 1 []
   %Friends.Person{
     __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
@@ -558,16 +571,16 @@ friends_repo=# select * from people;
 - 最後のレコード 取得
 
   ```elixir
-  iex(2)> Friends.Person |> Ecto.Query.last |> Friends.Repo.one 
+  iex(2)> Friends.Person |> Ecto.Query.last |> Friends.Repo.one
 
-  09:10:08.097 [debug] QUERY OK source="people" db=0.7ms queue=0.7ms idle=1081.6ms
+  11:17:46.505 [debug] QUERY OK source="people" db=1.5ms queue=2.5ms idle=1377.0ms
   SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 ORDER BY p0."id" DESC LIMIT 1 []
   %Friends.Person{
     __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
     age: 26,
-    first_name: "im3",
-    id: 3,
-    last_name: "miolab3"
+    first_name: "eli",
+    id: 4,
+    last_name: "xir"
   }
   ```
 
@@ -576,7 +589,7 @@ friends_repo=# select * from people;
   ```elixir
   iex(3)> Friends.Person |> Friends.Repo.all
 
-  09:10:58.107 [debug] QUERY OK source="people" db=1.1ms queue=1.6ms idle=91.3ms
+  11:19:58.105 [debug] QUERY OK source="people" db=0.3ms queue=0.4ms idle=1981.1ms
   SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 []
   [
     %Friends.Person{
@@ -589,16 +602,23 @@ friends_repo=# select * from people;
     %Friends.Person{
       __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
       age: 27,
-      first_name: "im2",
+      first_name: "foo",
       id: 2,
-      last_name: "miolab2"
+      last_name: "miolab"
     },
     %Friends.Person{
       __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
       age: 26,
-      first_name: "im3",
+      first_name: "foobar",
       id: 3,
-      last_name: "miolab3"
+      last_name: "hogehoge"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 26,
+      first_name: "eli",
+      id: 4,
+      last_name: "xir"
     }
   ]
   ```
@@ -608,7 +628,7 @@ friends_repo=# select * from people;
   ```elixir
   iex(4)> Friends.Person |> Friends.Repo.get(1)
 
-  09:11:39.422 [debug] QUERY OK source="people" db=1.4ms queue=1.6ms idle=1405.7ms
+  11:21:08.927 [debug] QUERY OK source="people" db=1.2ms queue=1.6ms idle=1801.0ms
   SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."id" = $1) [1]
   %Friends.Person{
     __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
@@ -617,33 +637,32 @@ friends_repo=# select * from people;
     id: 1,
     last_name: "miolab"
   }
-
   iex(5)> Friends.Person |> Friends.Repo.get(2)
 
-  09:11:41.785 [debug] QUERY OK source="people" db=1.9ms idle=1769.5ms
+  11:21:14.877 [debug] QUERY OK source="people" db=3.9ms idle=1749.7ms
   SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."id" = $1) [2]
   %Friends.Person{
     __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
     age: 27,
-    first_name: "im2",
+    first_name: "foo",
     id: 2,
-    last_name: "miolab2"
+    last_name: "miolab"
   }
   ```
 
 - __カラム属性__ に基づいてレコードを取得
 
   ```elixir
-  iex(6)> Friends.Person |> Friends.Repo.get_by(first_name: "im3")
+  iex(6)> Friends.Person |> Friends.Repo.get_by(first_name: "im")
 
-  09:12:13.275 [debug] QUERY OK source="people" db=1.0ms queue=2.6ms idle=1257.9ms
-  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."first_name" = $1) ["im3"]
+  11:23:40.635 [debug] QUERY OK source="people" db=1.4ms queue=5.4ms idle=1504.6ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."first_name" = $1) ["im"]
   %Friends.Person{
     __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
-    age: 26,
-    first_name: "im3",
-    id: 3,
-    last_name: "miolab3"
+    age: 28,
+    first_name: "im",
+    id: 1,
+    last_name: "miolab"
   }
   ```
 
