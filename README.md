@@ -769,7 +769,32 @@ friends_repo=# select * from people;
     ]
     ```
 
+  - クエリのアレンジ（使用例）
 
+    `last_name` 抽出に、`first_name` 抽出を追加して `AND` 検索となるようクエリをアレンジします。
+
+    ```elixir
+    iex(13)> query = Friends.Person |> Ecto.Query.where(last_name: "miolab")
+    #Ecto.Query<from p0 in Friends.Person, where: p0.last_name == "miolab">
+
+    iex(14)> query_fullname = query |> Ecto.Query.where(first_name: "im")
+    #Ecto.Query<from p0 in Friends.Person, where: p0.last_name == "miolab",
+    where: p0.first_name == "im">
+
+    iex(15)> query_fullname |> Friends.Repo.all
+
+    12:20:26.074 [debug] QUERY OK source="people" db=0.2ms idle=1460.8ms
+    SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."last_name" = 'miolab') AND (p0."first_name" = 'im') []
+    [
+      %Friends.Person{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+        age: 28,
+        first_name: "im",
+        id: 1,
+        last_name: "miolab"
+      }
+    ]
+    ```
 
 ---
 ---
