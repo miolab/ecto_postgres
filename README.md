@@ -877,12 +877,69 @@ friends_repo=# select * from people;
 
 - iex
 
+  `id: 3` のレコードを削除します。
+
   ```elixir
+  iex(5)> person_delete = Friends.Repo.get(Friends.Person, 3)
 
+  13:44:06.427 [debug] QUERY OK source="people" db=0.8ms idle=1014.5ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 WHERE (p0."id" = $1) [3]
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 26,
+    first_name: "foobar",
+    id: 3,
+    last_name: "hogehoge"
+  }
 
+  iex(6)> Friends.Repo.delete(person_delete)
+
+  13:44:47.048 [debug] QUERY OK db=2.4ms queue=2.1ms idle=1632.1ms
+  DELETE FROM "people" WHERE "id" = $1 [3]
+  {:ok,
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:deleted, "people">,
+    age: 26,
+    first_name: "foobar",
+    id: 3,
+    last_name: "hogehoge"
+  }}
   ```
 
----
----
+#### 結果確認（テーブル）
 
-(on going)
+- iex
+
+  ```
+  iex(7)> Friends.Person |> Friends.Repo.all
+
+  13:45:27.760 [debug] QUERY OK source="people" db=0.5ms queue=0.9ms idle=1347.4ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 []
+  [
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 27,
+      first_name: "foo",
+      id: 2,
+      last_name: "miolab"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 26,
+      first_name: "eli",
+      id: 4,
+      last_name: "xir"
+    },
+    %Friends.Person{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+      age: 18,
+      first_name: "im",
+      id: 1,
+      last_name: "miolab"
+    }
+  ]
+  ```
+
+  `id: 3` のレコードが削除されていることを確認できました。
+
+---
