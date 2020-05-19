@@ -797,6 +797,64 @@ friends_repo=# select * from people;
     ```
 
 ---
+
+## レコード更新（Update）
+
+- `$ iex -S mix`
+
+  ```elixir
+  iex(1)> require Ecto.Query
+  Ecto.Query
+
+  iex(2)> person = Friends.Person |> Ecto.Query.first |> Friends.Repo.one
+
+  13:09:01.291 [debug] QUERY OK source="people" db=0.9ms decode=1.5ms queue=1.3ms idle=1885.6ms
+  SELECT p0."id", p0."first_name", p0."last_name", p0."age" FROM "people" AS p0 ORDER BY p0."id" LIMIT 1 []
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 28,
+    first_name: "im",
+    id: 1,
+    last_name: "miolab"
+  }
+
+  iex(3)> changeset = Friends.Person.changeset(person, %{age: 18})
+  #Ecto.Changeset<
+    action: nil,
+    changes: %{age: 18},
+    errors: [],
+    data: #Friends.Person<>,
+    valid?: true
+  >
+
+  iex(4)> Friends.Repo.update(changeset)
+
+  13:10:28.235 [debug] QUERY OK db=1.8ms queue=2.5ms idle=1835.9ms
+  UPDATE "people" SET "age" = $1 WHERE "id" = $2 [18, 1]
+  {:ok,
+  %Friends.Person{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "people">,
+    age: 18,
+    first_name: "im",
+    id: 1,
+    last_name: "miolab"
+  }}
+  ```
+
+#### 結果確認（テーブル）
+
+  ```postgres
+  friends_repo=# select * from people;
+   id | first_name | last_name | age
+  ----+------------+-----------+-----
+    2 | foo        | miolab    |  27
+    3 | foobar     | hogehoge  |  26
+    4 | eli        | xir       |  26
+    1 | im         | miolab    |  18
+  (4 rows)
+  ```
+
+---
 ---
 
 (on going)
